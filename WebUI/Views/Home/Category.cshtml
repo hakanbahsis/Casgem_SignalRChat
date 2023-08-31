@@ -1,0 +1,41 @@
+﻿
+@{
+    ViewData["Title"] = "Category";
+    Layout = null;
+}
+
+
+<h1>Kategori Sayısı: <label id="categoryCount"></label></h1>
+<div id="cat">
+</div>
+
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/categoryHub", {
+            skipNegotiation: true,
+            transport: signalR.HttpTransportType.WebSockets
+        })
+        .build();
+
+    connection.start()
+        .then(() => {
+            console.log("SignalR connection started.");
+            setInterval(() => {
+                connection.invoke("UpdateCategoryCount");
+            }, 1000);
+        })
+        .catch((err) => {
+            console.error("Error starting SignalR connection: " + err);
+        });
+
+    connection.on("ReceiveCategoryCount", (newCount) => {
+        //$("#cat").text(newCount);
+        document.getElementById("cat").textContent = newCount;
+        //$("#categoryCount").text(connection.state +" "+ newCount);
+        document.getElementById("categoryCount").textContent = connection.state + " " + newCount;
+    });
+</script>
